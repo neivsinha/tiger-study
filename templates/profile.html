@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Profile Header -->
+    <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+        <div class="flex items-start justify-between">
+            <div class="flex items-center">
+                <!-- Profile Avatar -->
+                <div class="w-20 h-20 bg-princeton-orange text-white rounded-full flex items-center justify-center text-3xl font-bold mr-6">
+                    {{ user.username[0].upper() }}
+                </div>
+
+                <!-- Profile Info -->
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-1">{{ user.full_name }}</h1>
+                    <p class="text-lg text-gray-600 mb-2">@{{ user.username }}</p>
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <span>Class of {{ user.class_year }}</span>
+                        <span>•</span>
+                        <span>Member since {{ user.created_at.strftime('%b %Y') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Button -->
+            <a href="{{ url_for('edit_profile') }}"
+               class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">
+                Edit Profile
+            </a>
+        </div>
+    </div>
+
+    <!-- Activity Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-6 text-center">
+            <div class="text-3xl font-bold text-green-600 mb-1">{{ user.total_karma() }}</div>
+            <div class="text-sm text-gray-600">Total Karma</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 text-center">
+            <div class="text-3xl font-bold text-princeton-orange mb-1">{{ hosted_groups|length }}</div>
+            <div class="text-sm text-gray-600">Groups Hosted</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 text-center">
+            <div class="text-3xl font-bold text-princeton-orange mb-1">{{ joined_groups|length }}</div>
+            <div class="text-sm text-gray-600">Groups Joined</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 text-center">
+            <div class="text-3xl font-bold text-princeton-orange mb-1">{{ discussion_posts|length }}</div>
+            <div class="text-sm text-gray-600">Discussions Created</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6 text-center">
+            <div class="text-3xl font-bold text-princeton-orange mb-1">{{ replies_count }}</div>
+            <div class="text-sm text-gray-600">Replies Posted</div>
+        </div>
+    </div>
+
+    <!-- Top Contributions -->
+    <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Top Contributions</h2>
+        {% set top_posts = user.top_posts(5) %}
+        {% set top_replies = user.top_replies(5) %}
+
+        {% if top_posts or top_replies %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Top Posts -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"></path>
+                        </svg>
+                        Highest-Scoring Posts
+                    </h3>
+                    {% if top_posts %}
+                        <div class="space-y-3">
+                            {% for post in top_posts %}
+                            <div class="border-l-4 border-princeton-orange bg-gray-50 rounded-r-lg p-3">
+                                <div class="flex items-start justify-between mb-1">
+                                    <a href="{{ url_for('discussion_post_detail', post_id=post.id) }}"
+                                       class="text-sm font-semibold text-gray-900 hover:text-princeton-orange flex-1">
+                                        {{ post.title[:60] }}{% if post.title|length > 60 %}...{% endif %}
+                                    </a>
+                                    <span class="text-lg font-bold {% if post.score > 0 %}text-green-600{% else %}text-gray-600{% endif %} ml-2">
+                                        +{{ post.score }}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {{ post.course.code }} • {{ post.time_ago() }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-sm text-gray-500">No posts with positive scores yet.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Top Replies -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                        </svg>
+                        Highest-Scoring Replies
+                    </h3>
+                    {% if top_replies %}
+                        <div class="space-y-3">
+                            {% for reply in top_replies %}
+                            <div class="border-l-4 border-blue-500 bg-gray-50 rounded-r-lg p-3">
+                                <div class="flex items-start justify-between mb-1">
+                                    <a href="{{ url_for('discussion_post_detail', post_id=reply.post.id) }}"
+                                       class="text-sm font-semibold text-gray-900 hover:text-princeton-orange flex-1">
+                                        Re: {{ reply.post.title[:50] }}{% if reply.post.title|length > 50 %}...{% endif %}
+                                    </a>
+                                    <span class="text-lg font-bold {% if reply.score > 0 %}text-green-600{% else %}text-gray-600{% endif %} ml-2">
+                                        +{{ reply.score }}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-gray-500 mb-1">
+                                    {{ reply.post.course.code }} • {{ reply.time_ago() }}
+                                </div>
+                                <div class="text-xs text-gray-700">
+                                    {{ reply.content[:80] }}{% if reply.content|length > 80 %}...{% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-sm text-gray-500">No replies with positive scores yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <p class="text-gray-500">Start contributing to discussions to build your karma!</p>
+        {% endif %}
+    </div>
+
+    <!-- Study Groups Hosted -->
+    <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Study Groups I'm Hosting</h2>
+        {% if hosted_groups %}
+            <div class="space-y-4">
+                {% for group in hosted_groups %}
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-princeton-orange transition">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900">{{ group.title }}</h3>
+                        <span class="text-sm text-gray-500">{{ group.course.code }}</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-2">{{ group.description[:100] }}{% if group.description|length > 100 %}...{% endif %}</p>
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <span>{{ group.date_time|format_datetime }}</span>
+                        <span>•</span>
+                        <span>{{ group.location }}</span>
+                        <span>•</span>
+                        <span>{{ group.formatted_capacity() }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-500">You haven't hosted any study groups yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Study Groups Joined -->
+    <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Study Groups I've Joined</h2>
+        {% if joined_groups %}
+            <div class="space-y-4">
+                {% for group in joined_groups %}
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-princeton-orange transition">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-semibold text-gray-900">{{ group.title }}</h3>
+                        <span class="text-sm text-gray-500">{{ group.course.code }}</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-2">{{ group.description[:100] }}{% if group.description|length > 100 %}...{% endif %}</p>
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <span>Host: [{{ group.host.username }}]({{ url_for('user_profile', username=group.host.username) }})</span>
+                        <span>•</span>
+                        <span>{{ group.date_time|format_datetime }}</span>
+                        <span>•</span>
+                        <span>{{ group.location }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-500">You haven't joined any study groups yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Discussion Posts -->
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">My Discussion Posts</h2>
+        {% if discussion_posts %}
+            <div class="space-y-4">
+                {% for post in discussion_posts %}
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-princeton-orange transition">
+                    <div class="flex items-start justify-between mb-2">
+                        <a href="{{ url_for('discussion_post_detail', post_id=post.id) }}"
+                           class="text-lg font-semibold text-gray-900 hover:text-princeton-orange">
+                            {{ post.title }}
+                        </a>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
+                            {{ post.category }}
+                        </span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-2">{{ post.preview_content() }}</p>
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <span>{{ post.course.code }}</span>
+                        <span>•</span>
+                        <span class="{% if post.score > 0 %}text-green-600 font-semibold{% elif post.score < 0 %}text-red-600 font-semibold{% endif %}">{{ post.score }} points</span>
+                        <span>•</span>
+                        <span>{{ post.reply_count() }} replies</span>
+                        <span>•</span>
+                        <span>{{ post.time_ago() }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-500">You haven't created any discussion posts yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

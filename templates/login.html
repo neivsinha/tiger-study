@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Login - TigerStudy{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+    <!-- Login Card -->
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+            <p class="text-gray-600">Log in to access your study groups</p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Email or Username Field -->
+            <div class="mb-4">
+                <label for="email_or_username" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Email or Username <span class="text-red-500">*</span>
+                </label>
+                {{ form.email_or_username(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.email_or_username.errors else " border-gray-300"), placeholder="netid@princeton.edu or username") }}
+                {% if form.email_or_username.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.email_or_username.errors[0] }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-4">
+                <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Password <span class="text-red-500">*</span>
+                </label>
+                {{ form.password(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.password.errors else " border-gray-300")) }}
+                {% if form.password.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.password.errors[0] }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Remember Me Checkbox -->
+            <div class="mb-6 flex items-center justify-between">
+                <div class="flex items-center">
+                    {{ form.remember_me(class="w-4 h-4 text-princeton-orange border-gray-300 rounded focus:ring-princeton-orange") }}
+                    <label for="remember_me" class="ml-2 text-sm text-gray-700">
+                        Remember me
+                    </label>
+                </div>
+                <div>
+                    <a href="#" class="text-sm text-princeton-orange hover:underline">Forgot password?</a>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full px-6 py-4 bg-princeton-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition shadow-lg mb-4">
+                Log In
+            </button>
+
+            <!-- Register Link -->
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    Don't have an account?
+                    <a href="{{ url_for('register') }}" class="text-princeton-orange hover:underline font-semibold">Register here</a>
+                </p>
+            </div>
+        </form>
+    </div>
+
+    <!-- Help Text -->
+    <div class="mt-6 text-center">
+        <p class="text-sm text-gray-600">
+            For security reasons, please only access your account from trusted devices.
+        </p>
+    </div>
+</div>
+{% endblock %}

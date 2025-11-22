@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Register - TigerStudy{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+    <!-- Registration Card -->
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Join TigerStudy</h1>
+            <p class="text-gray-600">Create your account to start connecting with classmates</p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Email Field -->
+            <div class="mb-4">
+                <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Princeton Email <span class="text-red-500">*</span>
+                </label>
+                {{ form.email(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.email.errors else " border-gray-300"), placeholder="netid@princeton.edu") }}
+                {% if form.email.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.email.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">Must be a valid @princeton.edu email address</p>
+                {% endif %}
+            </div>
+
+            <!-- Username Field -->
+            <div class="mb-4">
+                <label for="username" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Username <span class="text-red-500">*</span>
+                </label>
+                {{ form.username(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.username.errors else " border-gray-300"), placeholder="jsmith26") }}
+                {% if form.username.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.username.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">3-20 characters, letters and numbers only</p>
+                {% endif %}
+            </div>
+
+            <!-- Full Name Field -->
+            <div class="mb-4">
+                <label for="full_name" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Full Name <span class="text-red-500">*</span>
+                </label>
+                {{ form.full_name(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.full_name.errors else " border-gray-300"), placeholder="John Smith") }}
+                {% if form.full_name.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.full_name.errors[0] }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Class Year Field -->
+            <div class="mb-4">
+                <label for="class_year" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Class Year <span class="text-red-500">*</span>
+                </label>
+                {{ form.class_year(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-princeton-orange transition") }}
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-4">
+                <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Password <span class="text-red-500">*</span>
+                </label>
+                {{ form.password(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.password.errors else " border-gray-300")) }}
+                {% if form.password.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.password.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">Minimum 8 characters</p>
+                {% endif %}
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="mb-6">
+                <label for="confirm_password" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Confirm Password <span class="text-red-500">*</span>
+                </label>
+                {{ form.confirm_password(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.confirm_password.errors else " border-gray-300")) }}
+                {% if form.confirm_password.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.confirm_password.errors[0] }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full px-6 py-4 bg-princeton-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition shadow-lg mb-4">
+                Create Account
+            </button>
+
+            <!-- Login Link -->
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    Already have an account?
+                    <a href="{{ url_for('login') }}" class="text-princeton-orange hover:underline font-semibold">Log in</a>
+                </p>
+            </div>
+        </form>
+    </div>
+
+    <!-- Info Box -->
+    <div class="mt-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div class="flex items-start">
+            <svg class="w-5 h-5 text-princeton-orange mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="text-sm text-gray-700">
+                <p class="font-semibold mb-1">Why Princeton email?</p>
+                <p>We require a Princeton email address to ensure this community is exclusively for Princeton students.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
