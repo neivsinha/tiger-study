@@ -3,7 +3,7 @@ Seed script for Princeton Study Group Finder
 Populates the database with Princeton courses and sample study groups
 """
 from app import app
-from models import db, Course, StudyGroup, Participant, DiscussionPost, DiscussionReply
+from models import db, User, Course, StudyGroup, Participant, DiscussionPost, DiscussionReply, PostVote, ReplyVote
 from datetime import datetime, timedelta
 import random
 
@@ -12,13 +12,56 @@ def clear_database():
     """Clear all existing data from the database"""
     print("Clearing existing data...")
     with app.app_context():
+        ReplyVote.query.delete()
+        PostVote.query.delete()
         DiscussionReply.query.delete()
         DiscussionPost.query.delete()
         Participant.query.delete()
         StudyGroup.query.delete()
         Course.query.delete()
+        User.query.delete()
         db.session.commit()
     print("Database cleared!")
+
+
+def seed_users():
+    """Seed sample Princeton users"""
+    print("\nSeeding users...")
+
+    users_data = [
+        {'email': 'jsmith26@princeton.edu', 'username': 'jsmith26',
+         'full_name': 'John Smith', 'class_year': 2026, 'password': 'password123'},
+        {'email': 'alee27@princeton.edu', 'username': 'alee27',
+         'full_name': 'Alice Lee', 'class_year': 2027, 'password': 'password123'},
+        {'email': 'mbrown25@princeton.edu', 'username': 'mbrown25',
+         'full_name': 'Michael Brown', 'class_year': 2025, 'password': 'password123'},
+        {'email': 'sjohnson28@princeton.edu', 'username': 'sjohnson28',
+         'full_name': 'Sarah Johnson', 'class_year': 2028, 'password': 'password123'},
+        {'email': 'dchen26@princeton.edu', 'username': 'dchen26',
+         'full_name': 'David Chen', 'class_year': 2026, 'password': 'password123'},
+        {'email': 'ewilliams27@princeton.edu', 'username': 'ewilliams27',
+         'full_name': 'Emily Williams', 'class_year': 2027, 'password': 'password123'},
+        {'email': 'rgarcia25@princeton.edu', 'username': 'rgarcia25',
+         'full_name': 'Robert Garcia', 'class_year': 2025, 'password': 'password123'},
+        {'email': 'lmartinez26@princeton.edu', 'username': 'lmartinez26',
+         'full_name': 'Laura Martinez', 'class_year': 2026, 'password': 'password123'},
+    ]
+
+    users = []
+    for user_data in users_data:
+        user = User(
+            email=user_data['email'],
+            username=user_data['username'],
+            full_name=user_data['full_name'],
+            class_year=user_data['class_year']
+        )
+        user.set_password(user_data['password'])
+        db.session.add(user)
+        users.append(user)
+
+    db.session.commit()
+    print(f"  Created {len(users)} users")
+    return users
 
 
 def seed_courses():
@@ -113,17 +156,17 @@ def seed_courses():
     print(f"Successfully seeded {len(courses_data)} courses!")
 
 
-def seed_study_groups():
+def seed_study_groups(users):
     """Seed sample study groups"""
     print("\nSeeding study groups...")
 
-    # Sample participant names
-    participant_names = [
-        'Alex Chen', 'Sarah Johnson', 'Michael Brown', 'Emily Davis',
-        'James Wilson', 'Jessica Martinez', 'David Lee', 'Ashley Garcia',
-        'Christopher Rodriguez', 'Amanda Taylor', 'Matthew Anderson',
-        'Jennifer Thomas', 'Joshua Jackson', 'Michelle White', 'Andrew Harris'
-    ]
+    # Get all users for random assignment
+    if not users:
+        users = User.query.all()
+
+    if len(users) < 2:
+        print("  Warning: Not enough users to create study groups properly")
+        return
 
     # Sample locations
     locations = [
@@ -235,17 +278,17 @@ def seed_study_groups():
                 # Random capacity
                 max_participants = random.choice([4, 5, 6, 8, 10, -1])
 
-                # Random host
-                host = random.choice(participant_names)
+                # Random host from users
+                host_user = random.choice(users)
 
                 study_group = StudyGroup(
                     course_id=course.id,
+                    host_id=host_user.id,
                     title=title,
                     description=description,
                     date_time=meeting_date,
                     location=location,
-                    max_participants=max_participants,
-                    host_name=host
+                    max_participants=max_participants
                 )
 
                 db.session.add(study_group)
@@ -254,7 +297,7 @@ def seed_study_groups():
                 # Add host as first participant
                 host_participant = Participant(
                     study_group_id=study_group.id,
-                    name=host,
+                    user_id=host_user.id,
                     joined_at=study_group.created_at
                 )
                 db.session.add(host_participant)
@@ -265,17 +308,20 @@ def seed_study_groups():
                 else:
                     num_additional = random.randint(1, 4)
 
-                available_names = [n for n in participant_names if n != host]
-                for j in range(num_additional):
-                    if available_names:
-                        participant_name = random.choice(available_names)
-                        available_names.remove(participant_name)
+                available_users = [u for u in users if u.id != host_user.id]
+                added_participants = set([host_user.id])
 
-                        participant = Participant(
-                            study_group_id=study_group.id,
-                            name=participant_name,
-                            joined_at=study_group.created_at + timedelta(hours=random.randint(1, 48))
-                        )
+                for j in range(num_additional):
+                    if available_users:
+                        participant_user = random.choice(available_users)
+                        if participant_user.id not in added_participants:
+                            added_participants.add(participant_user.id)
+
+                            participant = Participant(
+                                study_group_id=study_group.id,
+                                user_id=participant_user.id,
+                                joined_at=study_group.created_at + timedelta(hours=random.randint(1, 48))
+                            )
                         db.session.add(participant)
 
                 print(f"  Added: {course.code} - {title} ({study_group.participant_count()} participants)")
@@ -284,12 +330,20 @@ def seed_study_groups():
     print("Successfully seeded study groups!")
 
 
-def seed_discussions():
+def seed_discussions(users):
     """Seed sample discussion posts and replies"""
     print("\nSeeding discussion posts...")
 
-    # Sample author names
-    author_names = [
+    # Get all users for random assignment
+    if not users:
+        users = User.query.all()
+
+    if len(users) < 2:
+        print("  Warning: Not enough users to create discussions properly")
+        return
+
+    # Sample author names (no longer needed, keeping for structure)
+    author_names_deprecated = [
         'Alex Chen', 'Sarah Johnson', 'Michael Brown', 'Emily Davis',
         'James Wilson', 'Jessica Martinez', 'David Lee', 'Ashley Garcia',
         'Christopher Rodriguez', 'Amanda Taylor', 'Matthew Anderson'
@@ -379,7 +433,6 @@ def seed_discussions():
 
             for i in range(num_posts):
                 template = templates[i]
-                author = random.choice(author_names)
 
                 # Random creation time (1-30 days ago)
                 days_ago = random.randint(1, 30)
@@ -389,9 +442,12 @@ def seed_discussions():
                 # Pin first post sometimes
                 pinned = (i == 0 and random.random() < 0.3)
 
+                # Random author from users
+                author_user = random.choice(users)
+
                 post = DiscussionPost(
                     course_id=course.id,
-                    author_name=author,
+                    author_id=author_user.id,
                     title=template['title'],
                     content=template['content'],
                     category=template['category'],
@@ -405,12 +461,11 @@ def seed_discussions():
                 # Add 0-3 replies to each post
                 num_replies = random.randint(0, 3)
 
-                available_authors = [n for n in author_names if n != author]
-
                 for j in range(num_replies):
-                    if available_authors:
-                        reply_author = random.choice(available_authors)
-                        available_authors.remove(reply_author)
+                    # Get available reply authors (different from post author)
+                    available_reply_users = [u for u in users if u.id != author_user.id]
+                    if available_reply_users:
+                        reply_user = random.choice(available_reply_users)
 
                         # Reply created after post
                         reply_hours_offset = random.randint(2, 72)
@@ -418,7 +473,7 @@ def seed_discussions():
 
                         reply = DiscussionReply(
                             post_id=post.id,
-                            author_name=reply_author,
+                            author_id=reply_user.id,
                             content=random.choice(reply_templates),
                             created_at=reply_time
                         )
@@ -433,6 +488,118 @@ def seed_discussions():
     print(f"Successfully seeded {post_count} discussion posts with {reply_count} replies!")
 
 
+def seed_votes(users):
+    """Seed sample votes on discussion posts and replies"""
+    print("\nSeeding votes...")
+
+    # Get all users for voting
+    if not users:
+        users = User.query.all()
+
+    if len(users) < 2:
+        print("  Warning: Not enough users to create votes properly")
+        return
+
+    with app.app_context():
+        all_posts = DiscussionPost.query.all()
+        all_replies = DiscussionReply.query.all()
+
+        post_vote_count = 0
+        reply_vote_count = 0
+
+        # Vote on posts
+        for post in all_posts:
+            # Determine how many users will vote on this post (realistic distribution)
+            # Some posts get lots of votes, some get few
+            vote_probability = random.random()
+
+            if vote_probability < 0.2:
+                # Hot post - lots of votes (60-80% of users)
+                num_voters = random.randint(int(len(users) * 0.6), int(len(users) * 0.8))
+            elif vote_probability < 0.5:
+                # Popular post - moderate votes (30-50% of users)
+                num_voters = random.randint(int(len(users) * 0.3), int(len(users) * 0.5))
+            else:
+                # Regular post - fewer votes (10-30% of users)
+                num_voters = random.randint(int(len(users) * 0.1), int(len(users) * 0.3))
+
+            # Select random voters (excluding post author)
+            available_voters = [u for u in users if u.id != post.author_id]
+            voters = random.sample(available_voters, min(num_voters, len(available_voters)))
+
+            for voter in voters:
+                # Vote distribution: 70% upvote, 30% downvote (realistic for helpful content)
+                vote_type = 1 if random.random() < 0.7 else -1
+
+                # Create vote with timestamp after post creation
+                vote_time = post.created_at + timedelta(hours=random.randint(1, 72))
+
+                post_vote = PostVote(
+                    post_id=post.id,
+                    user_id=voter.id,
+                    vote_type=vote_type,
+                    created_at=vote_time
+                )
+                db.session.add(post_vote)
+                post_vote_count += 1
+
+            # Update post score
+            post.score = sum(v.vote_type for v in PostVote.query.filter_by(post_id=post.id).all())
+
+        # Vote on replies
+        for reply in all_replies:
+            # Replies typically get fewer votes than posts
+            vote_probability = random.random()
+
+            if vote_probability < 0.15:
+                # Great reply - good votes (40-60% of users)
+                num_voters = random.randint(int(len(users) * 0.4), int(len(users) * 0.6))
+            elif vote_probability < 0.4:
+                # Good reply - moderate votes (20-40% of users)
+                num_voters = random.randint(int(len(users) * 0.2), int(len(users) * 0.4))
+            else:
+                # Regular reply - fewer votes (5-20% of users)
+                num_voters = random.randint(int(len(users) * 0.05), int(len(users) * 0.2))
+
+            # Select random voters (excluding reply author)
+            available_voters = [u for u in users if u.id != reply.author_id]
+            if num_voters > len(available_voters):
+                num_voters = len(available_voters)
+
+            if num_voters > 0:
+                voters = random.sample(available_voters, num_voters)
+
+                for voter in voters:
+                    # Vote distribution: 75% upvote, 25% downvote (replies are usually helpful)
+                    vote_type = 1 if random.random() < 0.75 else -1
+
+                    # Create vote with timestamp after reply creation
+                    vote_time = reply.created_at + timedelta(hours=random.randint(1, 48))
+
+                    reply_vote = ReplyVote(
+                        reply_id=reply.id,
+                        user_id=voter.id,
+                        vote_type=vote_type,
+                        created_at=vote_time
+                    )
+                    db.session.add(reply_vote)
+                    reply_vote_count += 1
+
+                # Update reply score
+                reply.score = sum(v.vote_type for v in ReplyVote.query.filter_by(reply_id=reply.id).all())
+
+        db.session.commit()
+        print(f"  Created {post_vote_count} post votes and {reply_vote_count} reply votes")
+
+        # Print some statistics
+        high_score_posts = DiscussionPost.query.filter(DiscussionPost.score >= 3).count()
+        low_score_posts = DiscussionPost.query.filter(DiscussionPost.score < 0).count()
+        print(f"  High-scoring posts (score >= 3): {high_score_posts}")
+        print(f"  Low-scoring posts (score < 0): {low_score_posts}")
+
+    print("Successfully seeded votes!")
+
+
 def main():
     """Main seeding function"""
     print("="*60)
@@ -440,16 +607,31 @@ def main():
     print("="*60)
 
     with app.app_context():
-        # Create tables if they don't exist
+        # Drop all tables and recreate with new schema
+        print("Dropping all tables...")
+        db.drop_all()
+        print("Creating fresh tables with new schema...")
         db.create_all()
 
-    # Clear existing data
-    clear_database()
+        # Clear existing data (moved inside context)
+        print("Clearing existing data...")
+        ReplyVote.query.delete()
+        PostVote.query.delete()
+        DiscussionReply.query.delete()
+        DiscussionPost.query.delete()
+        Participant.query.delete()
+        StudyGroup.query.delete()
+        Course.query.delete()
+        User.query.delete()
+        db.session.commit()
+        print("Database cleared!")
 
-    # Seed data
-    seed_courses()
-    seed_study_groups()
-    seed_discussions()
+        # Seed data (IMPORTANT: Users FIRST!)
+        users = seed_users()
+        seed_courses()
+        seed_study_groups(users)
+        seed_discussions(users)
+        seed_votes(users)
 
     print("\n" + "="*60)
     print("Database seeding completed successfully!")

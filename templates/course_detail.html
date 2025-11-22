@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ course.code }} - Princeton Study Groups{% endblock %}
+{% block title %}{{ course.code }} - TigerStudy{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
@@ -142,7 +142,7 @@
                                 <svg class="w-5 h-5 mr-2 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
-                                <span>Host: <span class="font-medium">{{ group.host_name }}</span></span>
+                                <span>Host: <a href="{{ url_for('user_profile', username=group.host.username) }}" class="font-medium text-princeton-orange hover:underline">{{ group.host.username }}</a></span>
                             </div>
 
                             <!-- Participants -->
@@ -160,9 +160,10 @@
                             <p class="text-sm font-semibold text-gray-700 mb-2">Participants:</p>
                             <div class="flex flex-wrap gap-2">
                                 {% for participant in group.participants %}
-                                <span class="bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full">
-                                    {{ participant.name }}
-                                </span>
+                                <a href="{{ url_for('user_profile', username=participant.user.username) }}"
+                                   class="bg-gray-100 text-gray-700 text-xs font-medium px-3 py-1 rounded-full hover:bg-princeton-orange hover:text-white transition">
+                                    {{ participant.user.username }}
+                                </a>
                                 {% endfor %}
                             </div>
                         </div>
@@ -171,20 +172,47 @@
 
                     <!-- Right Side: Join Button -->
                     <div class="flex-shrink-0 md:ml-6">
-                        {% if not group.is_full() and not group.is_past() %}
-                        <button
-                            onclick="showJoinModal('{{ group.id }}', '{{ group.title }}')"
-                            class="w-full md:w-auto px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition shadow-md">
-                            Join Group
-                        </button>
-                        {% elif group.is_full() %}
-                        <button disabled class="w-full md:w-auto px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg cursor-not-allowed">
-                            Group Full
-                        </button>
-                        {% elif group.is_past() %}
-                        <button disabled class="w-full md:w-auto px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg cursor-not-allowed">
-                            Past Event
-                        </button>
+                        {% if current_user.is_authenticated %}
+                            {% if group.user_is_participant(current_user.id) %}
+                            <div class="flex flex-col gap-2">
+                                <button disabled class="w-full md:w-auto px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg cursor-not-allowed flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Already Joined
+                                </button>
+                                {% if not group.is_past() %}
+                                <form method="POST" action="{{ url_for('leave_study_group', group_id=group.id) }}" onsubmit="return confirm('Are you sure you want to leave this study group?');">
+                                    {{ form.hidden_tag() }}
+                                    <button type="submit" class="w-full md:w-auto px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition shadow-md flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                        </svg>
+                                        Leave Group
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            {% elif not group.is_full() and not group.is_past() %}
+                            <button
+                                onclick="showJoinModal('{{ group.id }}', '{{ group.title }}')"
+                                class="w-full md:w-auto px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition shadow-md">
+                                Join Group
+                            </button>
+                            {% elif group.is_full() %}
+                            <button disabled class="w-full md:w-auto px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg cursor-not-allowed">
+                                Group Full
+                            </button>
+                            {% elif group.is_past() %}
+                            <button disabled class="w-full md:w-auto px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg cursor-not-allowed">
+                                Past Event
+                            </button>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ url_for('login') }}"
+                               class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-md text-center block">
+                                Login to Join
+                            </a>
                         {% endif %}
                     </div>
                 </div>
@@ -214,21 +242,23 @@
 <div id="joinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
         <h3 class="text-2xl font-bold text-gray-900 mb-2">Join Study Group</h3>
-        <p id="modalGroupTitle" class="text-gray-600 mb-6"></p>
+        <p id="modalGroupTitle" class="text-gray-600 mb-4"></p>
+
+        {% if current_user.is_authenticated %}
+        <div class="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center">
+                <div class="w-10 h-10 bg-princeton-orange text-white rounded-full flex items-center justify-center text-lg font-bold mr-3">
+                    {{ current_user.username[0].upper() }}
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-gray-700">Joining as:</p>
+                    <p class="text-gray-900">{{ current_user.username }}</p>
+                </div>
+            </div>
+        </div>
 
         <form method="POST" id="joinForm">
-            {{ form.hidden_tag() if form is defined }}
-            <div class="mb-6">
-                <label for="participantName" class="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
-                <input
-                    type="text"
-                    id="participantName"
-                    name="name"
-                    required
-                    placeholder="Enter your name or NetID"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-princeton-orange transition"
-                />
-            </div>
+            {{ form.hidden_tag() }}
 
             <div class="flex gap-3">
                 <button
@@ -240,10 +270,11 @@
                 <button
                     type="submit"
                     class="flex-1 px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition">
-                    Join Group
+                    Confirm Join
                 </button>
             </div>
         </form>
+        {% endif %}
     </div>
 </div>
 
@@ -252,12 +283,10 @@
         document.getElementById('modalGroupTitle').textContent = groupTitle;
         document.getElementById('joinForm').action = '/study_group/' + groupId + '/join';
         document.getElementById('joinModal').classList.remove('hidden');
-        document.getElementById('participantName').focus();
     }
 
     function hideJoinModal() {
         document.getElementById('joinModal').classList.add('hidden');
-        document.getElementById('participantName').value = '';
     }
 
     // Close modal on Escape key

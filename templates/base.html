@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Princeton Study Groups{% endblock %}</title>
+    <title>{% block title %}TigerStudy{% endblock %}</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -59,7 +59,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                     </svg>
                     <div>
-                        <h1 class="text-2xl font-bold">Princeton Study Groups</h1>
+                        <h1 class="text-2xl font-bold">TigerStudy</h1>
                         <p class="text-xs text-gray-300">Find your study partners</p>
                     </div>
                 </a>
@@ -68,6 +68,43 @@
                     <a href="{{ url_for('home') }}" class="px-4 py-2 hover:bg-gray-800 rounded-lg transition">
                         Browse Courses
                     </a>
+
+                    {% if current_user.is_authenticated %}
+                        <!-- Logged In User Menu -->
+                        <div class="relative" id="userMenuContainer">
+                            <button id="userMenuButton" class="flex items-center space-x-2 px-4 py-2 hover:bg-gray-800 rounded-lg transition">
+                                <div class="w-8 h-8 bg-princeton-orange text-white rounded-full flex items-center justify-center text-sm font-bold">
+                                    {{ current_user.username[0].upper() }}
+                                </div>
+                                <span>{{ current_user.username }}</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div id="userMenuDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 hidden z-50">
+                                <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-100 transition">
+                                    My Profile
+                                </a>
+                                <a href="{{ url_for('edit_profile') }}" class="block px-4 py-2 text-gray-800 hover:bg-gray-100 transition">
+                                    Edit Profile
+                                </a>
+                                <hr class="my-2">
+                                <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-red-600 hover:bg-gray-100 transition">
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Not Logged In -->
+                        <a href="{{ url_for('login') }}" class="px-4 py-2 hover:bg-gray-800 rounded-lg transition">
+                            Login
+                        </a>
+                        <a href="{{ url_for('register') }}" class="px-4 py-2 bg-princeton-orange hover:bg-orange-600 rounded-lg transition font-semibold">
+                            Register
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -106,11 +143,61 @@
     <footer class="bg-gray-800 text-white mt-16">
         <div class="container mx-auto px-4 py-6 text-center">
             <p class="text-gray-400 text-sm">
-                &copy; 2024 Princeton Study Groups | Built for Princeton University students
+                &copy; 2025 TigerStudy | Built for Princeton University students
             </p>
         </div>
     </footer>
 
     {% block scripts %}{% endblock %}
+
+    <!-- User Menu Dropdown Script -->
+    <script>
+        // Handle user menu dropdown
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+        const userMenuContainer = document.getElementById('userMenuContainer');
+
+        if (userMenuButton && userMenuDropdown) {
+            let isMenuOpen = false;
+
+            // Toggle dropdown on button click
+            userMenuButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isMenuOpen = !isMenuOpen;
+                if (isMenuOpen) {
+                    userMenuDropdown.classList.remove('hidden');
+                } else {
+                    userMenuDropdown.classList.add('hidden');
+                }
+            });
+
+            // Keep dropdown open when hovering over it
+            userMenuDropdown.addEventListener('mouseenter', function() {
+                isMenuOpen = true;
+                userMenuDropdown.classList.remove('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userMenuContainer.contains(e.target)) {
+                    isMenuOpen = false;
+                    userMenuDropdown.classList.add('hidden');
+                }
+            });
+
+            // Optional: Close on mouse leave from both button and dropdown
+            let leaveTimeout;
+            userMenuContainer.addEventListener('mouseleave', function() {
+                leaveTimeout = setTimeout(function() {
+                    isMenuOpen = false;
+                    userMenuDropdown.classList.add('hidden');
+                }, 200); // Small delay to allow moving to dropdown
+            });
+
+            userMenuContainer.addEventListener('mouseenter', function() {
+                clearTimeout(leaveTimeout);
+            });
+        }
+    </script>
 </body>
 </html>

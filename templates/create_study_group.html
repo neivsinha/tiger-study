@@ -79,7 +79,7 @@
             </div>
 
             <!-- Max Participants Field -->
-            <div class="mb-6">
+            <div class="mb-8">
                 <label for="max_participants" class="block text-sm font-semibold text-gray-700 mb-2">
                     Max Participants <span class="text-red-500">*</span>
                 </label>
@@ -87,17 +87,17 @@
                 <p class="mt-2 text-sm text-gray-500">How many people can join? (including you)</p>
             </div>
 
-            <!-- Host Name Field -->
-            <div class="mb-8">
-                <label for="host_name" class="block text-sm font-semibold text-gray-700 mb-2">
-                    Your Name <span class="text-red-500">*</span>
-                </label>
-                {{ form.host_name(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.host_name.errors else " border-gray-300")) }}
-                {% if form.host_name.errors %}
-                    <p class="mt-2 text-sm text-red-600">{{ form.host_name.errors[0] }}</p>
-                {% else %}
-                    <p class="mt-2 text-sm text-gray-500">Your name or NetID will be visible to participants</p>
-                {% endif %}
+            <!-- Host Info (Read-only) -->
+            <div class="mb-8 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-princeton-orange text-white rounded-full flex items-center justify-center text-lg font-bold mr-3">
+                        {{ current_user.username[0].upper() }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-700">Hosting as:</p>
+                        <p class="text-gray-900">{{ current_user.full_name }} (@{{ current_user.username }})</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Submit Button -->
