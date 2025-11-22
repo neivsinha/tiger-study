@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Princeton Study Groups{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Hero Section -->
+    <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">Find Your Study Group</h2>
+        <p class="text-xl text-gray-600">Connect with classmates and ace your courses together</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-8">
+        <form action="{{ url_for('home') }}" method="get" class="max-w-2xl mx-auto">
+            <div class="relative">
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search_query }}"
+                    placeholder="Search for courses (e.g., COS126, MAT201)..."
+                    class="w-full px-6 py-4 pr-12 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-princeton-orange transition"
+                />
+                <button type="submit" class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if search_query and courses|length == 0 %}
+        <!-- No Search Results -->
+        <div class="text-center py-16">
+            <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h3 class="text-2xl font-semibold text-gray-700 mb-2">No courses found</h3>
+            <p class="text-gray-500 mb-4">No courses match "{{ search_query }}"</p>
+            <a href="{{ url_for('home') }}" class="text-princeton-orange hover:underline">Clear search</a>
+        </div>
+    {% else %}
+        <!-- Course Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for course in courses %}
+            <a href="{{ url_for('course_detail', course_code=course.code) }}" class="block">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover border-t-4 border-princeton-orange">
+                    <!-- Course Code -->
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-2xl font-bold text-princeton-black">{{ course.code }}</h3>
+
+                        <!-- Active Study Groups Badge -->
+                        {% set active_count = course.active_study_groups_count() %}
+                        {% if active_count > 0 %}
+                        <span class="bg-princeton-orange text-white text-xs font-semibold px-3 py-1 rounded-full">
+                            {{ active_count }} active
+                        </span>
+                        {% else %}
+                        <span class="bg-gray-200 text-gray-600 text-xs font-semibold px-3 py-1 rounded-full">
+                            No groups
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Course Title -->
+                    <h4 class="text-gray-700 font-semibold mb-3 line-clamp-2 min-h-[3rem]">
+                        {{ course.title }}
+                    </h4>
+
+                    <!-- Course Description -->
+                    {% if course.description %}
+                    <p class="text-gray-500 text-sm line-clamp-3 mb-4">
+                        {{ course.description }}
+                    </p>
+                    {% endif %}
+
+                    <!-- View Groups Button -->
+                    <div class="flex items-center text-princeton-orange font-semibold mt-4">
+                        <span>View study groups</span>
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if not search_query and courses|length == 0 %}
+        <!-- No Courses at All -->
+        <div class="text-center py-16">
+            <svg class="w-24 h-24 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <h3 class="text-2xl font-semibold text-gray-700 mb-2">No courses available</h3>
+            <p class="text-gray-500">Please run the seed script to populate the database with courses.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

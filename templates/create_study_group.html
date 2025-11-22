@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Create Study Group - {{ course.code }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{{ url_for('course_detail', course_code=course.code) }}" class="inline-flex items-center text-gray-600 hover:text-princeton-orange transition">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to {{ course.code }}
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <!-- Header -->
+        <div class="mb-8 pb-6 border-b border-gray-200">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Create Study Group</h1>
+            <p class="text-gray-600">{{ course.code }}: {{ course.title }}</p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Title Field -->
+            <div class="mb-6">
+                <label for="title" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Study Group Title <span class="text-red-500">*</span>
+                </label>
+                {{ form.title(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.title.errors else " border-gray-300")) }}
+                {% if form.title.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.title.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">Give your study group a clear, descriptive title</p>
+                {% endif %}
+            </div>
+
+            <!-- Description Field -->
+            <div class="mb-6">
+                <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Description <span class="text-red-500">*</span>
+                </label>
+                {{ form.description(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition resize-y" + (" border-red-500" if form.description.errors else " border-gray-300")) }}
+                {% if form.description.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.description.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">Describe what topics you'll cover and what to expect</p>
+                {% endif %}
+            </div>
+
+            <!-- Date and Time Field -->
+            <div class="mb-6">
+                <label for="date_time" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Date and Time <span class="text-red-500">*</span>
+                </label>
+                {{ form.date_time(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.date_time.errors else " border-gray-300")) }}
+                {% if form.date_time.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.date_time.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">When will your study group meet?</p>
+                {% endif %}
+            </div>
+
+            <!-- Location Field -->
+            <div class="mb-6">
+                <label for="location" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Location <span class="text-red-500">*</span>
+                </label>
+                {{ form.location(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.location.errors else " border-gray-300")) }}
+                {% if form.location.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.location.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">e.g., "Fine Hall 214", "Frist Campus Center", or "Virtual/Zoom"</p>
+                {% endif %}
+            </div>
+
+            <!-- Max Participants Field -->
+            <div class="mb-6">
+                <label for="max_participants" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Max Participants <span class="text-red-500">*</span>
+                </label>
+                {{ form.max_participants(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-princeton-orange transition") }}
+                <p class="mt-2 text-sm text-gray-500">How many people can join? (including you)</p>
+            </div>
+
+            <!-- Host Name Field -->
+            <div class="mb-8">
+                <label for="host_name" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Your Name <span class="text-red-500">*</span>
+                </label>
+                {{ form.host_name(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.host_name.errors else " border-gray-300")) }}
+                {% if form.host_name.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.host_name.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">Your name or NetID will be visible to participants</p>
+                {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex gap-4">
+                <a href="{{ url_for('course_detail', course_code=course.code) }}"
+                   class="flex-1 px-6 py-4 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition text-center">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="flex-1 px-6 py-4 bg-princeton-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition shadow-lg">
+                    Create Study Group
+                </button>
+            </div>
+        </form>
+
+        <!-- Tips Section -->
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Tips for a Great Study Group:</h3>
+            <ul class="space-y-2 text-sm text-gray-600">
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-princeton-orange mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Be specific about what you'll cover (e.g., "Problem Set 3, Questions 1-5" instead of just "Homework Help")</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-princeton-orange mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Choose a quiet, accessible location where everyone can focus</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-princeton-orange mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Set a reasonable group size - smaller groups (3-6) often work best for active discussion</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-princeton-orange mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Schedule sessions with enough lead time for people to plan ahead</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set minimum datetime to now
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateTimeInput = document.getElementById('date_time');
+        if (dateTimeInput) {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            dateTimeInput.min = now.toISOString().slice(0, 16);
+        }
+    });
+</script>
+{% endblock %}
