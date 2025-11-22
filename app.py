@@ -4,8 +4,8 @@ A modern web app for Princeton students to find and join study groups
 """
 from flask import Flask, render_template, redirect, url_for, flash, request
 from datetime import datetime, timedelta
-from models import db, Course, StudyGroup, Participant
-from forms import CreateStudyGroupForm, JoinStudyGroupForm
+from models import db, Course, StudyGroup, Participant, DiscussionPost, DiscussionReply
+from forms import CreateStudyGroupForm, JoinStudyGroupForm, CreateDiscussionPostForm, CreateDiscussionReplyForm
 import os
 
 app = Flask(__name__)
@@ -178,6 +178,86 @@ def join_study_group(group_id):
                 flash(error, 'error')
 
     return redirect(url_for('course_detail', course_code=study_group.course.code))
+
+
+@app.route('/course/<course_code>/discussions')
+def discussion_board(course_code):
+    """Discussion board for a course"""
+    course = Course.query.filter_by(code=course_code.upper()).first_or_404()
+
+    # Get all discussion posts for this course, sorted by pinned first, then most recent
+    posts = DiscussionPost.query.filter_by(course_id=course.id).order_by(
+        DiscussionPost.pinned.desc(),
+        DiscussionPost.created_at.desc()
+    ).all()
+
+    return render_template('discussion_board.html', course=course, posts=posts)
+
+
+@app.route('/course/<course_code>/discussions/new', methods=['GET', 'POST'])
+def create_discussion(course_code):
+    """Create a new discussion post"""
+    course = Course.query.filter_by(code=course_code.upper()).first_or_404()
+    form = CreateDiscussionPostForm()
+
+    if form.validate_on_submit():
+        # Create new discussion post
+        post = DiscussionPost(
+            course_id=course.id,
+            author_name=form.author_name.data,
+            title=form.title.data,
+            content=form.content.data,
+            category=form.category.data
+        )
+
+        db.session.add(post)
+        db.session.commit()
+
+        flash(f'Discussion post "{post.title}" created successfully!', 'success')
+        return redirect(url_for('discussion_post_detail', post_id=post.id))
+
+    return render_template('create_discussion.html', course=course, form=form)
+
+
+@app.route('/discussion/<int:post_id>')
+def discussion_post_detail(post_id):
+    """View individual discussion post with replies"""
+    post = DiscussionPost.query.get_or_404(post_id)
+    form = CreateDiscussionReplyForm()
+
+    # Get all replies sorted by creation time
+    replies = DiscussionReply.query.filter_by(post_id=post_id).order_by(
+        DiscussionReply.created_at.asc()
+    ).all()
+
+    return render_template('discussion_post_detail.html', post=post, replies=replies, form=form)
+
+
+@app.route('/discussion/<int:post_id>/reply', methods=['POST'])
+def reply_to_discussion(post_id):
+    """Add a reply to a discussion post"""
+    post = DiscussionPost.query.get_or_404(post_id)
+    form = CreateDiscussionReplyForm()
+
+    if form.validate_on_submit():
+        # Create new reply
+        reply = DiscussionReply(
+            post_id=post_id,
+            author_name=form.author_name.data,
+            content=form.content.data
+        )
+
+        db.session.add(reply)
+        db.session.commit()
+
+        flash('Reply posted successfully!', 'success')
+    else:
+        # Form validation failed
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(error, 'error')
+
+    return redirect(url_for('discussion_post_detail', post_id=post_id))
 
 
 @app.errorhandler(404)

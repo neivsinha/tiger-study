@@ -77,3 +77,66 @@ class JoinStudyGroupForm(FlaskForm):
         ],
         render_kw={'placeholder': 'Your name or NetID'}
     )
+
+
+class CreateDiscussionPostForm(FlaskForm):
+    """Form for creating a new discussion post"""
+    author_name = StringField(
+        'Your Name',
+        validators=[
+            DataRequired(message='Your name is required'),
+            Length(min=2, max=100, message='Name must be between 2 and 100 characters')
+        ],
+        render_kw={'placeholder': 'Your name or NetID'}
+    )
+
+    title = StringField(
+        'Post Title',
+        validators=[
+            DataRequired(message='Title is required'),
+            Length(min=5, max=200, message='Title must be between 5 and 200 characters')
+        ],
+        render_kw={'placeholder': 'e.g., Question about Problem Set 3'}
+    )
+
+    category = SelectField(
+        'Category',
+        choices=[
+            ('Question', 'Question'),
+            ('Study Tips', 'Study Tips'),
+            ('Resources', 'Resources'),
+            ('Exam Prep', 'Exam Prep'),
+            ('General', 'General')
+        ],
+        validators=[DataRequired()]
+    )
+
+    content = TextAreaField(
+        'Content',
+        validators=[
+            DataRequired(message='Content is required'),
+            Length(min=10, max=5000, message='Content must be between 10 and 5000 characters')
+        ],
+        render_kw={'placeholder': 'Share your question, tip, or resource...', 'rows': 8}
+    )
+
+
+class CreateDiscussionReplyForm(FlaskForm):
+    """Form for replying to a discussion post"""
+    author_name = StringField(
+        'Your Name',
+        validators=[
+            DataRequired(message='Your name is required'),
+            Length(min=2, max=100, message='Name must be between 2 and 100 characters')
+        ],
+        render_kw={'placeholder': 'Your name or NetID'}
+    )
+
+    content = TextAreaField(
+        'Your Reply',
+        validators=[
+            DataRequired(message='Reply content is required'),
+            Length(min=5, max=2000, message='Reply must be between 5 and 2000 characters')
+        ],
+        render_kw={'placeholder': 'Write your reply...', 'rows': 4}
+    )

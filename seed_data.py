@@ -3,7 +3,7 @@ Seed script for Princeton Study Group Finder
 Populates the database with Princeton courses and sample study groups
 """
 from app import app
-from models import db, Course, StudyGroup, Participant
+from models import db, Course, StudyGroup, Participant, DiscussionPost, DiscussionReply
 from datetime import datetime, timedelta
 import random
 
@@ -12,6 +12,8 @@ def clear_database():
     """Clear all existing data from the database"""
     print("Clearing existing data...")
     with app.app_context():
+        DiscussionReply.query.delete()
+        DiscussionPost.query.delete()
         Participant.query.delete()
         StudyGroup.query.delete()
         Course.query.delete()
@@ -282,6 +284,155 @@ def seed_study_groups():
     print("Successfully seeded study groups!")
 
 
+def seed_discussions():
+    """Seed sample discussion posts and replies"""
+    print("\nSeeding discussion posts...")
+
+    # Sample author names
+    author_names = [
+        'Alex Chen', 'Sarah Johnson', 'Michael Brown', 'Emily Davis',
+        'James Wilson', 'Jessica Martinez', 'David Lee', 'Ashley Garcia',
+        'Christopher Rodriguez', 'Amanda Taylor', 'Matthew Anderson'
+    ]
+
+    # Discussion templates by category
+    discussion_templates = {
+        'COS126': [
+            {'title': 'Recursion vs. Iteration - When to Use Each?', 'category': 'Question',
+             'content': 'I\'m working on Problem Set 3 and struggling to decide when to use recursion versus iteration. Can someone explain when each approach is better? Specifically for tree traversals and array processing.'},
+            {'title': 'Best Resources for Understanding Arrays', 'category': 'Resources',
+             'content': 'Found this great visualization tool for understanding array operations: https://visualgo.net\n\nIt really helped me grasp how array indexing works and common operations like insertion and deletion. Highly recommend!'},
+            {'title': 'Midterm Study Group Tips', 'category': 'Study Tips',
+             'content': 'Just wanted to share what worked for our study group last semester:\n\n1. Review lectures 1-2 days before meeting\n2. Each person presents one challenging problem\n3. Work through past exam problems together\n4. Quiz each other on key concepts\n\nWe all did really well on the midterm using this approach!'},
+            {'title': 'Problem Set 4 - Anyone else stuck on the optional challenge?', 'category': 'Question',
+             'content': 'The optional challenge about optimizing the search algorithm is really tough. I\'ve tried a few approaches but my solution is still too slow. Has anyone made progress on this?'},
+        ],
+        'COS226': [
+            {'title': 'Graph Algorithms - DFS vs BFS Clarification', 'category': 'Question',
+             'content': 'Can someone help clarify when to use DFS versus BFS? I understand the mechanics of each, but I\'m not clear on which one is better for different use cases.'},
+            {'title': 'Amazing Visualization for BST Operations', 'category': 'Resources',
+             'content': 'Check out this interactive BST visualizer I found. You can see rotations, insertions, and deletions in real-time: https://www.cs.usfca.edu/~galles/visualization/BST.html'},
+            {'title': 'Final Exam Preparation Strategy', 'category': 'Exam Prep',
+             'content': 'With the final coming up, what are people focusing on? I\'m planning to:\n- Review all sorting algorithms and their complexities\n- Practice graph problems\n- Go through priority queues again\n\nWhat else should be on this list?'},
+        ],
+        'MAT201': [
+            {'title': 'Double Integrals Order of Integration', 'category': 'Question',
+             'content': 'I keep getting confused about when to switch the order of integration. Is there a systematic way to determine the best order? Sometimes one order seems much easier than the other.'},
+            {'title': 'Vector Calculus Study Resources', 'category': 'Resources',
+             'content': 'Paul\'s Online Math Notes have been a lifesaver for this class: http://tutorial.math.lamar.edu\n\nThe practice problems are great and the explanations are clearer than the textbook sometimes.'},
+            {'title': 'Partial Derivatives - Common Mistakes to Avoid', 'category': 'Study Tips',
+             'content': 'After tutoring for this class, here are the most common mistakes I see:\n\n1. Forgetting to apply chain rule\n2. Not treating other variables as constants\n3. Sign errors when taking second derivatives\n4. Mixing up the order of mixed partials\n\nDouble-check these when solving problems!'},
+        ],
+        'ECO100': [
+            {'title': 'Elasticity Calculations - Need Help', 'category': 'Question',
+             'content': 'I understand the concept of price elasticity, but I\'m struggling with the calculations. Especially when we need to determine if demand is elastic or inelastic. Can someone walk through an example?'},
+            {'title': 'Game Theory Practice Problems', 'category': 'Resources',
+             'content': 'Found a great set of game theory practice problems with solutions. Really helped me prepare for the midterm. DM me if you want the link!'},
+            {'title': 'Understanding Supply and Demand Shifts', 'category': 'Study Tips',
+             'content': 'Tip: Draw the graphs! I used to try to visualize shifts in my head but drawing them out makes it SO much clearer. Also helps on exams when you can sketch quick diagrams.'},
+        ],
+        'PHY103': [
+            {'title': 'Kinematics Problem Solving Approach', 'category': 'Study Tips',
+             'content': 'Here\'s my systematic approach that\'s been working:\n\n1. Draw a diagram with coordinate system\n2. List known and unknown variables\n3. Choose the right kinematic equation\n4. Solve algebraically before plugging in numbers\n5. Check if the answer makes physical sense\n\nAnyone else have tips to add?'},
+            {'title': 'Lab Report Format Question', 'category': 'Question',
+             'content': 'For the uncertainty analysis section, should we include both systematic and random errors? The rubric isn\'t super clear on this.'},
+        ],
+        'PSY101': [
+            {'title': 'Memory Techniques for Course Material', 'category': 'Study Tips',
+             'content': 'Ironically, using memory techniques from the course to learn course material! \n\nI\'ve been using:\n- Spaced repetition for definitions\n- Method of loci for studies/researchers\n- Chunking for related concepts\n\nIt\'s actually working pretty well!'},
+            {'title': 'Development Psychology Resources', 'category': 'Resources',
+             'content': 'The Khan Academy psychology section has great videos that complement our textbook. The animations really help visualize concepts like Piaget\'s stages.'},
+        ]
+    }
+
+    # Reply templates
+    reply_templates = [
+        "This is really helpful, thanks for sharing!",
+        "I was wondering the same thing. Following this thread!",
+        "Great explanation! That cleared up my confusion.",
+        "Adding to this - I found that practicing similar problems really helps.",
+        "Thanks! This resource is exactly what I needed.",
+        "Good question - I think the key is to look at...",
+        "I had the same issue. What helped me was...",
+        "This makes so much sense now. Appreciate the detailed response!",
+        "Definitely agree with this approach. It worked well for me too.",
+        "Can you elaborate a bit more on this part?",
+    ]
+
+    with app.app_context():
+        courses = Course.query.all()
+
+        post_count = 0
+        reply_count = 0
+
+        for course in courses:
+            # Get templates for this course or skip if none
+            if course.code not in discussion_templates:
+                continue
+
+            templates = discussion_templates[course.code]
+
+            # Create 3-5 discussion posts per course (or all available if fewer)
+            max_posts = min(5, len(templates))
+            min_posts = min(3, len(templates))
+            num_posts = random.randint(min_posts, max_posts) if min_posts <= max_posts else len(templates)
+
+            for i in range(num_posts):
+                template = templates[i]
+                author = random.choice(author_names)
+
+                # Random creation time (1-30 days ago)
+                days_ago = random.randint(1, 30)
+                hours_ago = random.randint(0, 23)
+                created_time = datetime.now() - timedelta(days=days_ago, hours=hours_ago)
+
+                # Pin first post sometimes
+                pinned = (i == 0 and random.random() < 0.3)
+
+                post = DiscussionPost(
+                    course_id=course.id,
+                    author_name=author,
+                    title=template['title'],
+                    content=template['content'],
+                    category=template['category'],
+                    pinned=pinned,
+                    created_at=created_time
+                )
+
+                db.session.add(post)
+                db.session.flush()  # Get the post ID
+
+                # Add 0-3 replies to each post
+                num_replies = random.randint(0, 3)
+
+                available_authors = [n for n in author_names if n != author]
+
+                for j in range(num_replies):
+                    if available_authors:
+                        reply_author = random.choice(available_authors)
+                        available_authors.remove(reply_author)
+
+                        # Reply created after post
+                        reply_hours_offset = random.randint(2, 72)
+                        reply_time = created_time + timedelta(hours=reply_hours_offset)
+
+                        reply = DiscussionReply(
+                            post_id=post.id,
+                            author_name=reply_author,
+                            content=random.choice(reply_templates),
+                            created_at=reply_time
+                        )
+
+                        db.session.add(reply)
+                        reply_count += 1
+
+                post_count += 1
+                print(f"  Added: {course.code} - {template['title'][:50]}... ({num_replies} replies)")
+
+        db.session.commit()
+    print(f"Successfully seeded {post_count} discussion posts with {reply_count} replies!")
+
+
 def main():
     """Main seeding function"""
     print("="*60)
@@ -298,6 +449,7 @@ def main():
     # Seed data
     seed_courses()
     seed_study_groups()
+    seed_discussions()
 
     print("\n" + "="*60)
     print("Database seeding completed successfully!")

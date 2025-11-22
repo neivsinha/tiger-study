@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}New Discussion - {{ course.code }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{{ url_for('discussion_board', course_code=course.code) }}" class="inline-flex items-center text-gray-600 hover:text-princeton-orange transition">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to discussions
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <!-- Header -->
+        <div class="mb-8 pb-6 border-b border-gray-200">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Start a Discussion</h1>
+            <p class="text-gray-600">{{ course.code }}: {{ course.title }}</p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Author Name Field -->
+            <div class="mb-6">
+                <label for="author_name" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Your Name <span class="text-red-500">*</span>
+                </label>
+                {{ form.author_name(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.author_name.errors else " border-gray-300")) }}
+                {% if form.author_name.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.author_name.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">Your name or NetID will be visible to others</p>
+                {% endif %}
+            </div>
+
+            <!-- Title Field -->
+            <div class="mb-6">
+                <label for="title" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Discussion Title <span class="text-red-500">*</span>
+                </label>
+                {{ form.title(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition" + (" border-red-500" if form.title.errors else " border-gray-300")) }}
+                {% if form.title.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.title.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">Choose a clear, descriptive title for your post</p>
+                {% endif %}
+            </div>
+
+            <!-- Category Field -->
+            <div class="mb-6">
+                <label for="category" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Category <span class="text-red-500">*</span>
+                </label>
+                {{ form.category(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-princeton-orange transition") }}
+                <p class="mt-2 text-sm text-gray-500">Select the category that best fits your post</p>
+            </div>
+
+            <!-- Content Field -->
+            <div class="mb-8">
+                <label for="content" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Content <span class="text-red-500">*</span>
+                </label>
+                {{ form.content(class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-princeton-orange transition resize-y" + (" border-red-500" if form.content.errors else " border-gray-300")) }}
+                {% if form.content.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.content.errors[0] }}</p>
+                {% else %}
+                    <p class="mt-2 text-sm text-gray-500">Share your question, tip, resource, or start a conversation</p>
+                {% endif %}
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex gap-4">
+                <a href="{{ url_for('discussion_board', course_code=course.code) }}"
+                   class="flex-1 px-6 py-4 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition text-center">
+                    Cancel
+                </a>
+                <button type="submit"
+                        class="flex-1 px-6 py-4 bg-princeton-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition shadow-lg">
+                    Post Discussion
+                </button>
+            </div>
+        </form>
+
+        <!-- Tips Section -->
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">Tips for Great Discussions:</h3>
+            <ul class="space-y-2 text-sm text-gray-600">
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-princeton-orange mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Be specific and clear in your title - help others understand what you're discussing</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-princeton-orange mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>For questions, include what you've tried and where you're stuck</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-princeton-orange mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>For resources, explain why it's helpful and how others can use it</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-princeton-orange mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Be respectful and constructive - we're all here to learn together</span>
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-princeton-orange mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Search existing discussions first to avoid duplicates</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

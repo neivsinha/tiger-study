@@ -1,6 +1,6 @@
 # Princeton Study Group Finder 🎓
 
-A modern, full-stack web application built with Flask that helps Princeton University students find and join study groups for their courses. Connect with classmates, ace your courses together, and build a collaborative learning community!
+A modern, full-stack web application built with Flask that helps Princeton University students find and join study groups for their courses AND participate in course discussion boards. Connect with classmates, ask questions, share resources, ace your courses together, and build a collaborative learning community!
 
 ![Princeton Study Groups](https://img.shields.io/badge/Flask-3.0.0-orange)
 ![Python](https://img.shields.io/badge/Python-3.x-blue)
@@ -9,8 +9,8 @@ A modern, full-stack web application built with Flask that helps Princeton Unive
 
 ## ✨ Features
 
-### Core Functionality
-- 📚 **Browse Courses**: View 15+ popular Princeton courses with active study group counts
+### Study Groups
+- 📚 **Browse Courses**: View 15+ popular Princeton courses with active study group & discussion counts
 - 🔍 **Smart Search**: Find courses by code or title with real-time filtering
 - 👥 **Create Study Groups**: Host study sessions with customizable details
 - 🤝 **Join Groups**: Easy one-click joining with participant management
@@ -19,10 +19,19 @@ A modern, full-stack web application built with Flask that helps Princeton Unive
 - ⚡ **Real-time Updates**: Live participant counts and capacity tracking
 - 🎨 **Modern UI**: Clean, responsive design with Princeton branding
 
+### Discussion Boards (NEW!)
+- 💬 **Course Discussions**: Dedicated discussion board for each course
+- 📝 **Post Topics**: Ask questions, share study tips, post resources, or discuss exam prep
+- 🏷️ **Categories**: Organized by Question, Study Tips, Resources, Exam Prep, and General
+- 💭 **Reply System**: Threaded replies to keep conversations organized
+- 📌 **Pinned Posts**: Important discussions can be pinned to the top
+- ⏰ **Time Ago Format**: "5 minutes ago", "Yesterday", etc. for easy readability
+- 🔄 **Tab Navigation**: Seamlessly switch between Study Groups and Discussions
+
 ### User Experience
 - **Friendly DateTime Formatting**: "Today at 3:00 PM", "Tomorrow at 2:00 PM"
 - **Capacity Management**: Visual indicators for full groups
-- **Empty States**: Helpful messages when no groups exist
+- **Empty States**: Helpful messages when no groups or discussions exist
 - **Flash Messages**: Clear success/error feedback
 - **Form Validation**: Comprehensive client and server-side validation
 - **Modal Interactions**: Smooth join experience with modal dialogs
@@ -50,8 +59,11 @@ vibe-a-thon_2/
 ├── templates/             # Jinja2 templates
 │   ├── base.html          # Base template with navigation
 │   ├── home.html          # Course listing page
-│   ├── course_detail.html # Study groups for a course
-│   └── create_study_group.html # Create new group form
+│   ├── course_detail.html # Study groups for a course (with tabs)
+│   ├── create_study_group.html # Create new group form
+│   ├── discussion_board.html # Discussion posts for a course
+│   ├── discussion_post_detail.html # Individual discussion with replies
+│   └── create_discussion.html # Create new discussion post
 └── study_groups.db        # SQLite database (created on first run)
 ```
 
@@ -79,6 +91,24 @@ vibe-a-thon_2/
 - `study_group_id`: Foreign key to StudyGroup
 - `name`: Participant name
 - `joined_at`: Join timestamp
+
+**DiscussionPost** (NEW!)
+- `id`: Primary key
+- `course_id`: Foreign key to Course
+- `author_name`: Name of post author
+- `title`: Discussion title
+- `content`: Post content (supports multi-line)
+- `category`: Question, Study Tips, Resources, Exam Prep, or General
+- `pinned`: Boolean for pinned status
+- `created_at`: Creation timestamp
+- `updated_at`: Last update timestamp
+
+**DiscussionReply** (NEW!)
+- `id`: Primary key
+- `post_id`: Foreign key to DiscussionPost
+- `author_name`: Name of reply author
+- `content`: Reply content
+- `created_at`: Creation timestamp
 
 ## 🚀 Setup Instructions
 
@@ -113,7 +143,8 @@ vibe-a-thon_2/
    - Create the SQLite database
    - Add 15 Princeton courses
    - Generate 30+ sample study groups with participants
-   - Populate realistic sample data
+   - Create 15+ discussion posts with replies
+   - Populate realistic sample data across all features
 
 5. **Run the application**
    ```bash
