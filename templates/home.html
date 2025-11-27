@@ -42,10 +42,10 @@
         </div>
     {% else %}
         <!-- Course Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="courseGrid">
             {% for course in courses %}
             <a href="{{ url_for('course_detail', course_code=course.code) }}" class="block">
-                <div class="bg-white rounded-xl shadow-md p-6 card-hover border-t-4 border-princeton-orange">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover border-t-4 border-princeton-orange fade-in-card ripple-container" style="animation-delay: {{ loop.index0 * 0.05 }}s">
                     <!-- Course Code -->
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="text-2xl font-bold text-princeton-black">{{ course.code }}</h3>
@@ -132,4 +132,31 @@
         overflow: hidden;
     }
 </style>
+
+<script>
+    // Add ripple effect to course cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.ripple-container');
+
+        cards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+
+                card.appendChild(ripple);
+
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+    });
+</script>
 {% endblock %}

@@ -84,7 +84,7 @@
 
         <!-- Create Study Group Button -->
         <a href="{{ url_for('create_study_group', course_code=course.code) }}"
-           class="inline-flex items-center px-6 py-3 bg-princeton-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition shadow-lg">
+           class="inline-flex items-center px-6 py-3 bg-princeton-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition shadow-lg btn-pulse btn-icon-rotate">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -96,7 +96,7 @@
     {% if study_groups|length > 0 %}
         <div class="space-y-4">
             {% for group in study_groups %}
-            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition {% if group.is_past() %}opacity-60{% endif %}">
+            <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition fade-in-card {% if group.is_past() %}opacity-60{% endif %}" style="animation-delay: {{ loop.index0 * 0.05 }}s">
                 <div class="flex flex-col md:flex-row md:items-start md:justify-between">
                     <!-- Left Side: Group Info -->
                     <div class="flex-1 mb-4 md:mb-0">
@@ -197,7 +197,7 @@
                             {% elif not group.is_full() and not group.is_past() %}
                             <button
                                 onclick="showJoinModal('{{ group.id }}', '{{ group.title }}')"
-                                class="w-full md:w-auto px-6 py-3 border-2 border-princeton-orange text-princeton-orange font-semibold rounded-lg hover:bg-orange-50 transition flex items-center justify-center">
+                                class="w-full md:w-auto px-6 py-3 border-2 border-princeton-orange text-princeton-orange font-semibold rounded-lg hover:bg-orange-50 transition flex items-center justify-center btn-pulse btn-icon-rotate">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>

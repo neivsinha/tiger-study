@@ -25,11 +25,12 @@
     <style>
         /* Custom animations and transitions */
         .card-hover {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, scale 0.2s ease;
         }
         .card-hover:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            scale: 1.02;
         }
 
         /* Flash message animations */
@@ -46,6 +47,100 @@
 
         .flash-message {
             animation: slideIn 0.3s ease-out;
+        }
+
+        /* Staggered fade-in animation for cards */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-card {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        /* Button pulse animation */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .btn-pulse:hover {
+            animation: pulse 0.6s ease-in-out;
+        }
+
+        /* Icon bounce animations */
+        @keyframes bounceUp {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+
+        @keyframes bounceDown {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(3px);
+            }
+        }
+
+        .icon-bounce-up:hover {
+            animation: bounceUp 0.4s ease;
+        }
+
+        .icon-bounce-down:hover {
+            animation: bounceDown 0.4s ease;
+        }
+
+        /* Button icon rotation */
+        .btn-icon-rotate {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-icon-rotate:hover svg {
+            transform: rotate(90deg);
+        }
+
+        /* Ripple effect on click */
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .ripple-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 143, 0, 0.3);
+            width: 20px;
+            height: 20px;
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
         }
     </style>
 </head>
