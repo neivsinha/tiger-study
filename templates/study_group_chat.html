@@ -5,56 +5,70 @@
 {% block content %}
 <div class="max-w-6xl mx-auto">
     <!-- Back Button -->
-    <div class="mb-6">
-        <a href="{{ url_for('course_detail', course_code=group.course.code) }}" class="inline-flex items-center text-gray-600 hover:text-princeton-orange transition">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            Back to {{ group.course.code }}
+    <div class="mb-8">
+        <a href="{{ url_for('course_detail', course_code=group.course.code) }}" class="inline-flex items-center text-gray-600 hover:text-princeton-orange transition group">
+            <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-2 group-hover:bg-orange-50 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </div>
+            <span class="font-medium">Back to {{ group.course.code }}</span>
         </a>
     </div>
 
-    <!-- Group Header -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-6 border-l-8 border-princeton-orange">
+    <!-- Enhanced Group Header -->
+    <div class="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
         <div class="flex items-start justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ group.title }}</h1>
-                <p class="text-gray-600 mb-3">{{ group.description }}</p>
-
-                <!-- Group Info -->
-                <div class="flex flex-wrap gap-4 text-sm text-gray-700">
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-1 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        <span>{{ group.date_time|format_datetime }}</span>
-                    </div>
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-1 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        <span>{{ group.location }}</span>
-                    </div>
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-1 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex-1">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-princeton-orange to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         </svg>
-                        <span>{{ group.formatted_capacity() }}</span>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-gray-900">{{ group.title }}</h1>
+                    {% if group.host_id == current_user.id %}
+                    <span class="bg-gradient-to-r from-princeton-orange to-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+                        HOST
+                    </span>
+                    {% endif %}
+                </div>
+                <p class="text-gray-600 mb-4 leading-relaxed">{{ group.description }}</p>
+
+                <!-- Enhanced Group Info -->
+                <div class="flex flex-wrap gap-3">
+                    <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
+                        <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <span class="font-medium text-gray-700">{{ group.date_time|format_datetime }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
+                        <div class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <span class="font-medium text-gray-700">{{ group.location }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
+                        <div class="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                        <span class="font-medium text-gray-700">{{ group.formatted_capacity() }}</span>
                     </div>
                 </div>
             </div>
-
-            {% if group.host_id == current_user.id %}
-            <span class="bg-princeton-orange text-white text-xs font-semibold px-3 py-1 rounded-full">
-                HOST
-            </span>
-            {% endif %}
         </div>
     </div>
 
-    <!-- Chat Container -->
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+    <!-- Enhanced Chat Container -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <!-- Chat Messages -->
         <div class="p-6 space-y-4 max-h-[600px] overflow-y-auto" id="chatMessages">
             {% if messages|length > 0 %}
@@ -148,7 +162,7 @@
     </div>
 
     <!-- Participants List -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-8">
         <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <svg class="w-5 h-5 mr-2 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>

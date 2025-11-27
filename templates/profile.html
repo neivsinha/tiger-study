@@ -4,61 +4,104 @@
 
 {% block content %}
 <div class="max-w-5xl mx-auto">
-    <!-- Profile Header -->
-    <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+    <!-- Enhanced Profile Header -->
+    <div class="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
         <div class="flex items-start justify-between">
-            <div class="flex items-center">
-                <!-- Profile Avatar -->
-                <div class="w-20 h-20 bg-princeton-orange text-white rounded-full flex items-center justify-center text-3xl font-bold mr-6">
-                    {{ user.username[0].upper() }}
+            <div class="flex items-center gap-6">
+                <!-- Enhanced Profile Avatar -->
+                <div class="relative">
+                    <div class="w-24 h-24 bg-gradient-to-br from-princeton-orange to-orange-600 text-white rounded-2xl flex items-center justify-center text-4xl font-extrabold shadow-lg">
+                        {{ user.username[0].upper() }}
+                    </div>
+                    <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-lg border-4 border-white"></div>
                 </div>
 
                 <!-- Profile Info -->
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-1">{{ user.full_name }}</h1>
-                    <p class="text-lg text-gray-600 mb-2">@{{ user.username }}</p>
-                    <div class="flex items-center gap-4 text-sm text-gray-500">
-                        <span>Class of {{ user.class_year }}</span>
-                        <span>•</span>
-                        <span>Member since {{ user.created_at.strftime('%b %Y') }}</span>
+                    <h1 class="text-4xl font-extrabold text-gray-900 mb-2">{{ user.full_name }}</h1>
+                    <p class="text-lg text-gray-600 mb-3 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 bg-princeton-orange rounded-full"></span>
+                        @{{ user.username }}
+                    </p>
+                    <div class="flex items-center gap-4 text-sm text-gray-600">
+                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg shadow-sm">
+                            <svg class="w-4 h-4 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            <span class="font-medium">Class of {{ user.class_year }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg shadow-sm">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="font-medium">Member since {{ user.created_at.strftime('%b %Y') }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Edit Button -->
+            <!-- Enhanced Edit Button -->
             <a href="{{ url_for('edit_profile') }}"
-               class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition">
+               class="px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 font-bold rounded-xl hover:border-princeton-orange hover:text-princeton-orange hover:shadow-md transition-all flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
                 Edit Profile
             </a>
         </div>
     </div>
 
-    <!-- Activity Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow p-6 text-center">
-            <div class="text-3xl font-bold text-green-600 mb-1">{{ user.total_karma() }}</div>
-            <div class="text-sm text-gray-600">Total Karma</div>
+    <!-- Enhanced Activity Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center hover:shadow-md transition group">
+            <div class="w-12 h-12 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-extrabold text-green-600 mb-1">{{ user.total_karma() }}</div>
+            <div class="text-xs font-medium text-gray-600">Total Karma</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6 text-center">
-            <div class="text-3xl font-bold text-princeton-orange mb-1">{{ hosted_groups|length }}</div>
-            <div class="text-sm text-gray-600">Groups Hosted</div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center hover:shadow-md transition group">
+            <div class="w-12 h-12 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition">
+                <svg class="w-6 h-6 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-extrabold text-princeton-orange mb-1">{{ hosted_groups|length }}</div>
+            <div class="text-xs font-medium text-gray-600">Groups Hosted</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6 text-center">
-            <div class="text-3xl font-bold text-princeton-orange mb-1">{{ joined_groups|length }}</div>
-            <div class="text-sm text-gray-600">Groups Joined</div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center hover:shadow-md transition group">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-extrabold text-purple-600 mb-1">{{ joined_groups|length }}</div>
+            <div class="text-xs font-medium text-gray-600">Groups Joined</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6 text-center">
-            <div class="text-3xl font-bold text-princeton-orange mb-1">{{ discussion_posts|length }}</div>
-            <div class="text-sm text-gray-600">Discussions Created</div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center hover:shadow-md transition group">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-extrabold text-blue-600 mb-1">{{ discussion_posts|length }}</div>
+            <div class="text-xs font-medium text-gray-600">Discussions</div>
         </div>
-        <div class="bg-white rounded-lg shadow p-6 text-center">
-            <div class="text-3xl font-bold text-princeton-orange mb-1">{{ replies_count }}</div>
-            <div class="text-sm text-gray-600">Replies Posted</div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center hover:shadow-md transition group">
+            <div class="w-12 h-12 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition">
+                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-extrabold text-indigo-600 mb-1">{{ replies_count }}</div>
+            <div class="text-xs font-medium text-gray-600">Replies</div>
         </div>
     </div>
 
     <!-- Top Contributions -->
-    <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Top Contributions</h2>
         {% set top_posts = user.top_posts(5) %}
         {% set top_replies = user.top_replies(5) %}
@@ -138,7 +181,7 @@
     </div>
 
     <!-- Study Groups Hosted -->
-    <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Study Groups I'm Hosting</h2>
         {% if hosted_groups %}
             <div class="space-y-4">
@@ -165,7 +208,7 @@
     </div>
 
     <!-- Study Groups Joined -->
-    <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Study Groups I've Joined</h2>
         {% if joined_groups %}
             <div class="space-y-4">
@@ -195,7 +238,7 @@
     </div>
 
     <!-- Discussion Posts -->
-    <div class="bg-white rounded-xl shadow-lg p-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-4">My Discussion Posts</h2>
         {% if discussion_posts %}
             <div class="space-y-4">

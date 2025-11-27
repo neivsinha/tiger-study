@@ -389,6 +389,37 @@ def leave_study_group(group_id):
     return redirect(url_for('course_detail', course_code=study_group.course.code))
 
 
+@app.route('/study_group/<int:group_id>/delete', methods=['POST'])
+@login_required
+def delete_study_group(group_id):
+    """Delete a study group (host only)"""
+    study_group = StudyGroup.query.get_or_404(group_id)
+    form = JoinStudyGroupForm()
+
+    if form.validate_on_submit():
+        # Check if user is the host
+        if study_group.host_id != current_user.id:
+            flash('Only the host can delete a study group.', 'error')
+        else:
+            # Store the course code and title before deletion
+            course_code = study_group.course.code
+            group_title = study_group.title
+
+            # Delete the study group (cascade will delete participants and chat messages)
+            db.session.delete(study_group)
+            db.session.commit()
+
+            flash(f'Study group "{group_title}" has been deleted successfully.', 'success')
+            return redirect(url_for('course_detail', course_code=course_code))
+    else:
+        # Form validation failed
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(error, 'error')
+
+    return redirect(url_for('course_detail', course_code=study_group.course.code))
+
+
 @app.route('/course/<course_code>/discussions')
 def discussion_board(course_code):
     """Discussion board for a course"""
