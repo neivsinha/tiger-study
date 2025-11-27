@@ -5,9 +5,9 @@ A modern web app for Princeton students to find and join study groups
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from datetime import datetime, timedelta
-from models import db, bcrypt, User, Course, StudyGroup, Participant, DiscussionPost, DiscussionReply, PostVote, ReplyVote
+from models import db, bcrypt, User, Course, StudyGroup, Participant, DiscussionPost, DiscussionReply, PostVote, ReplyVote, ChatMessage
 from forms import (CreateStudyGroupForm, JoinStudyGroupForm, CreateDiscussionPostForm,
-                   CreateDiscussionReplyForm, RegistrationForm, LoginForm, EditProfileForm, VoteForm)
+                   CreateDiscussionReplyForm, RegistrationForm, LoginForm, EditProfileForm, VoteForm, ChatMessageForm)
 import os
 
 app = Flask(__name__)
@@ -601,6 +601,88 @@ def vote_on_reply(reply_id):
             db.session.commit()
 
     return redirect(request.referrer or url_for('discussion_post_detail', post_id=reply.post_id))
+
+
+# ==================== STUDY GROUP CHAT ROUTES ====================
+
+@app.route('/study_group/<int:group_id>')
+@login_required
+def study_group_chat(group_id):
+    """View study group chat page"""
+    group = StudyGroup.query.get_or_404(group_id)
+
+    # Check if user is a participant or host
+    if not group.user_is_participant(current_user.id):
+        flash('You must be a member of this study group to view the chat.', 'warning')
+        return redirect(url_for('course_detail', course_code=group.course.code))
+
+    # Get all chat messages, ordered by pinned first, then by time
+    messages = ChatMessage.query.filter_by(study_group_id=group_id).order_by(
+        ChatMessage.pinned.desc(),
+        ChatMessage.created_at.asc()
+    ).all()
+
+    form = ChatMessageForm()
+
+    return render_template('study_group_chat.html',
+                         group=group,
+                         messages=messages,
+                         form=form)
+
+
+@app.route('/study_group/<int:group_id>/message', methods=['POST'])
+@login_required
+def send_chat_message(group_id):
+    """Send a chat message in a study group"""
+    group = StudyGroup.query.get_or_404(group_id)
+
+    # Check if user is a participant or host
+    if not group.user_is_participant(current_user.id):
+        flash('You must be a member of this study group to send messages.', 'warning')
+        return redirect(url_for('course_detail', course_code=group.course.code))
+
+    form = ChatMessageForm()
+
+    if form.validate_on_submit():
+        message = ChatMessage(
+            study_group_id=group_id,
+            author_id=current_user.id,
+            content=form.content.data
+        )
+        db.session.add(message)
+        db.session.commit()
+        flash('Message sent!', 'success')
+
+    return redirect(url_for('study_group_chat', group_id=group_id))
+
+
+@app.route('/study_group/<int:group_id>/message/<int:message_id>/pin', methods=['POST'])
+@login_required
+def pin_chat_message(group_id, message_id):
+    """Pin or unpin a chat message (host only)"""
+    group = StudyGroup.query.get_or_404(group_id)
+    message = ChatMessage.query.get_or_404(message_id)
+
+    # Check if user is the host
+    if group.host_id != current_user.id:
+        flash('Only the group host can pin messages.', 'error')
+        return redirect(url_for('study_group_chat', group_id=group_id))
+
+    # Check if message belongs to this group
+    if message.study_group_id != group_id:
+        flash('Invalid message.', 'error')
+        return redirect(url_for('study_group_chat', group_id=group_id))
+
+    # Toggle pin status
+    message.pinned = not message.pinned
+    db.session.commit()
+
+    if message.pinned:
+        flash('Message pinned successfully!', 'success')
+    else:
+        flash('Message unpinned.', 'info')
+
+    return redirect(url_for('study_group_chat', group_id=group_id))
 
 
 @app.errorhandler(404)

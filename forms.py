@@ -254,3 +254,15 @@ class VoteForm(FlaskForm):
             NumberRange(min=-1, max=1, message='Vote type must be -1, 0, or 1')
         ]
     )
+
+
+class ChatMessageForm(FlaskForm):
+    """Form for sending chat messages in study groups"""
+    content = TextAreaField(
+        'Message',
+        validators=[
+            DataRequired(message='Message cannot be empty'),
+            Length(min=1, max=1000, message='Message must be between 1 and 1000 characters')
+        ],
+        render_kw={'placeholder': 'Type your message...', 'rows': 3}
+    )

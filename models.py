@@ -30,6 +30,7 @@ class User(UserMixin, db.Model):
     discussion_replies = db.relationship('DiscussionReply', backref='author', lazy=True, cascade='all, delete-orphan')
     post_votes = db.relationship('PostVote', backref='user', lazy=True, cascade='all, delete-orphan')
     reply_votes = db.relationship('ReplyVote', backref='user', lazy=True, cascade='all, delete-orphan')
+    chat_messages = db.relationship('ChatMessage', backref='author', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -118,8 +119,9 @@ class StudyGroup(db.Model):
     max_participants = db.Column(db.Integer, nullable=False)  # -1 for unlimited
     created_at = db.Column(db.DateTime, default=datetime.now)
 
-    # Relationship to participants
+    # Relationships
     participants = db.relationship('Participant', backref='study_group', lazy=True, cascade='all, delete-orphan')
+    chat_messages = db.relationship('ChatMessage', backref='study_group', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<StudyGroup {self.title}>'
@@ -306,3 +308,41 @@ class ReplyVote(db.Model):
 
     def __repr__(self):
         return f'<ReplyVote user={self.user_id} reply={self.reply_id} type={self.vote_type}>'
+
+
+class ChatMessage(db.Model):
+    """Model for study group chat messages"""
+    __tablename__ = 'chat_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    study_group_id = db.Column(db.Integer, db.ForeignKey('study_groups.id'), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    pinned = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    def __repr__(self):
+        return f'<ChatMessage by {self.author.username} in group {self.study_group_id}>'
+
+    def time_ago(self):
+        """Return human-readable time ago"""
+        now = datetime.now()
+        diff = now - self.created_at
+
+        seconds = diff.total_seconds()
+
+        if seconds < 60:
+            return "just now"
+        elif seconds < 3600:
+            minutes = int(seconds / 60)
+            return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+        elif seconds < 86400:
+            hours = int(seconds / 3600)
+            return f"{hours} hour{'s' if hours != 1 else ''} ago"
+        elif seconds < 172800:  # 2 days
+            return "Yesterday"
+        elif seconds < 604800:  # 7 days
+            days = int(seconds / 86400)
+            return f"{days} days ago"
+        else:
+            return self.created_at.strftime('%b %d, %Y at %I:%M %p')

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.title }} - Chat{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{{ url_for('course_detail', course_code=group.course.code) }}" class="inline-flex items-center text-gray-600 hover:text-princeton-orange transition">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to {{ group.course.code }}
+        </a>
+    </div>
+
+    <!-- Group Header -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6 border-l-8 border-princeton-orange">
+        <div class="flex items-start justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ group.title }}</h1>
+                <p class="text-gray-600 mb-3">{{ group.description }}</p>
+
+                <!-- Group Info -->
+                <div class="flex flex-wrap gap-4 text-sm text-gray-700">
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-1 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>{{ group.date_time|format_datetime }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-1 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <span>{{ group.location }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-1 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span>{{ group.formatted_capacity() }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if group.host_id == current_user.id %}
+            <span class="bg-princeton-orange text-white text-xs font-semibold px-3 py-1 rounded-full">
+                HOST
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Chat Messages -->
+        <div class="p-6 space-y-4 max-h-[600px] overflow-y-auto" id="chatMessages">
+            {% if messages|length > 0 %}
+                {% for message in messages %}
+                <div class="flex gap-3 {% if message.pinned %}bg-yellow-50 border-l-4 border-yellow-400 pl-4 py-3 rounded{% endif %}">
+                    <!-- User Avatar -->
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 bg-princeton-orange text-white rounded-full flex items-center justify-center text-sm font-bold">
+                            {{ message.author.username[0].upper() }}
+                        </div>
+                    </div>
+
+                    <!-- Message Content -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-baseline gap-2 mb-1">
+                            <a href="{{ url_for('user_profile', username=message.author.username) }}"
+                               class="font-semibold text-gray-900 hover:text-princeton-orange">
+                                {{ message.author.username }}
+                            </a>
+                            {% if message.author.id == group.host_id %}
+                            <span class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">Host</span>
+                            {% endif %}
+                            <span class="text-xs text-gray-500">{{ message.time_ago() }}</span>
+                            {% if message.pinned %}
+                            <span class="text-xs bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded font-semibold">
+                                📌 PINNED
+                            </span>
+                            {% endif %}
+                        </div>
+                        <p class="text-gray-700 break-words whitespace-pre-wrap">{{ message.content }}</p>
+                    </div>
+
+                    <!-- Pin Button (Host Only) -->
+                    {% if group.host_id == current_user.id %}
+                    <div class="flex-shrink-0">
+                        <form method="POST" action="{{ url_for('pin_chat_message', group_id=group.id, message_id=message.id) }}">
+                            {{ form.hidden_tag() }}
+                            <button type="submit"
+                                    class="text-gray-400 hover:text-yellow-500 transition p-1"
+                                    title="{% if message.pinned %}Unpin message{% else %}Pin message{% endif %}">
+                                {% if message.pinned %}
+                                <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1z"></path>
+                                </svg>
+                                {% else %}
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                                </svg>
+                                {% endif %}
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-12">
+                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">No messages yet</h3>
+                    <p class="text-gray-500">Be the first to send a message to the group!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Message Input Form -->
+        <div class="border-t border-gray-200 p-4 bg-gray-50">
+            <form method="POST" action="{{ url_for('send_chat_message', group_id=group.id) }}" class="flex gap-3">
+                {{ form.hidden_tag() }}
+                <div class="flex-1">
+                    {{ form.content(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-princeton-orange focus:border-transparent resize-none") }}
+                    {% if form.content.errors %}
+                        <div class="text-red-600 text-sm mt-1">
+                            {% for error in form.content.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="submit"
+                        class="px-6 py-3 bg-princeton-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition shadow-md flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                    Send
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Participants List -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-princeton-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            Participants ({{ group.participants|length }})
+        </h2>
+        <div class="flex flex-wrap gap-2">
+            {% for participant in group.participants %}
+            <a href="{{ url_for('user_profile', username=participant.user.username) }}"
+               class="bg-gray-100 text-gray-700 text-sm font-medium px-3 py-2 rounded-lg hover:bg-princeton-orange hover:text-white transition flex items-center gap-2">
+                <div class="w-6 h-6 bg-princeton-orange text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    {{ participant.user.username[0].upper() }}
+                </div>
+                {{ participant.user.username }}
+                {% if participant.user.id == group.host_id %}
+                <span class="text-xs">(Host)</span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-scroll to bottom of chat on page load
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Auto-scroll to bottom after form submission
+    window.addEventListener('load', function() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+</script>
+{% endblock %}
